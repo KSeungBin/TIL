@@ -1,5 +1,5 @@
 # practical_exercise 
-## code for MNIST classification
+- Training a deep neural network on MNIST with PyTorch
 
 file name | purpose
 ---|---|
