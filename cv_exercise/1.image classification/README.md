@@ -1,4 +1,4 @@
-# Chest X-Ray Images(Pneumonia)
+# Chest X-Ray Images
 [kaggle link](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia)
 
 
