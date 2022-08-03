@@ -9,7 +9,7 @@
 
 
 ### Content
-|**# of train data**|**# of validation data**
+dataset|**# of train data**|**# of validation data**
 |:-:|:---:|:---:
 **CT image**|14910|1798
 **mask**|14910|1798
