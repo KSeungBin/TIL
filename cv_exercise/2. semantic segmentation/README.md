@@ -1,5 +1,5 @@
 # CT Lung & Heart & Trachea segmentation
-- Segmentation masks for CT reconstruction image  
+- Segmentation masks for CT reconstruction video   
 
 
 
