@@ -1,4 +1,5 @@
 # A solution that expands aroung the corner
+# different from 'longest common substring' using dynamic programming
 # 2 two-pointer for both odd and even size of array
 
 
