@@ -1,9 +1,11 @@
-# Making and Autoencoder Using PyTorch and training on MNIST
+Making and Autoencoder Using PyTorch and training on MNIST
+===
+
 ### 1. Test Result  
 ---
 ![image](https://user-images.githubusercontent.com/90584177/183294244-61d7b820-24de-4cf1-8eff-de5a94fb7c6d.png)
 
-<p class="callout info">How to troubleshoot this autoencoder's bad reconstruction</p>
+```How to troubleshoot this autoencoder's bad reconstruction```
 
 > 1. Bottleneck layer is too narrow
 
@@ -16,7 +18,6 @@
     - Even though the validation loss steadily decreased, training was stopped at 50 epochs due to limits in computing power
 
 
-
 ### 2. Latent Space Visualization 
 ---
 embedding of 784-dimensional inputs within a 2-dimensional manifold   
@@ -27,4 +28,4 @@ where input vectors which resemble each other more closely are positioned closer
 ### 3. Latent Space Inference
 ---
 Inference about (-2,2) on the x-axis and (-2,2) on the y-axis of the image above
-![image](https://user-images.githubusercontent.com/90584177/183295550-5f7c6869-70e5-49aa-921d-2fcdfa500826.png)
+<img src="https://user-images.githubusercontent.com/90584177/183295550-5f7c6869-70e5-49aa-921d-2fcdfa500826.png" width="500px" height="500px" title="inference result"></img>
