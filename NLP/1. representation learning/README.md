@@ -3,13 +3,13 @@
 ---
 ![image](https://user-images.githubusercontent.com/90584177/183294244-61d7b820-24de-4cf1-8eff-de5a94fb7c6d.png)
 
-<p class="callout info">How to troubleshoot this autoencoder's bad reconstruction</p>
-1. Bottleneck layer is too narrow
+NOTE: How to troubleshoot this autoencoder's bad reconstruction
+> 1. Bottleneck layer is too narrow
    - The bottleneck size was set to 2 for latent space visualization
    - Therefore, the resulting algorithm missed important dimensions(features) for the problem
    - Optimal bottle neck size is 10 to 20
 
-2. Increasing the number of epochs
+> 2. Increasing the number of epochs
    - Even though the validation loss steadily decreased, training was stopped at 50 epochs due to limits in computing power
 
 
