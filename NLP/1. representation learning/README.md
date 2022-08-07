@@ -23,4 +23,8 @@ where input vectors which resemble each other more closely are positioned closer
 ### 3. Latent Space Inference
 ---
 Inference about (-2,2) on the x-axis and (-2,2) on the y-axis of the image above
+<<<<<<< HEAD
 ![image](https://user-images.githubusercontent.com/90584177/183295550-5f7c6869-70e5-49aa-921d-2fcdfa500826.png)
+=======
+![image](https://user-images.githubusercontent.com/90584177/183295550-5f7c6869-70e5-49aa-921d-2fcdfa500826.png)
+>>>>>>> 814a29ed98ab4a5c4098493c4fe083693a37900e
