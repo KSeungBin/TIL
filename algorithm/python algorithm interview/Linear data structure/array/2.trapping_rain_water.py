@@ -1,7 +1,4 @@
-from tkinter import RIGHT
-from turtle import distance
-
-
+# https://leetcode.com/problems/trapping-rain-water/
 # Move two-pointer to the max
 def trap1(self, height:list(int)) -> int:
     if not height:
