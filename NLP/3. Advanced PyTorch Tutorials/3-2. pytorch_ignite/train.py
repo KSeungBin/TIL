@@ -37,10 +37,10 @@ def main(config):
 
     model = ImageClassifier(28**2, 10).to(device)
     optimizer = optim.Adam(model.parameters())
-    crit = nn.NLLLoss()
+    crit = nn.NLLLoss()  # classification task : Cross-Entropy & Softmax
 
     trainer = Trainer(config)
-    trainer.train(model, crit, optimizer, train_loader, valid_loader)
+    trainer.train(model, crit, optimizer, train_loader, valid_loader) # test는 별도의 .ipynb 파일에서 수행하므로 train.py 파일에서는 필요 없다
 
 if __name__ == '__main__':
     config = define_argparser()
