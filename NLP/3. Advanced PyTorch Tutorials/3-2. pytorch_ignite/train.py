@@ -8,6 +8,7 @@ from model import ImageClassifier
 from trainer import Trainer
 from data_loader import get_loaders
 
+# python train.py --model_fn model.pth --batch_size 512
 def define_argparser():
     p = argparse.ArgumentParser()
 

@@ -1,3 +1,5 @@
+# ignite를 활용해 event 기반의 프로그래밍을 하면 유지보수 편리하다.
+# training하는 boiler template을 만들어놓으면 재활용하면서 딥러닝 연구 개발의 생산성을 높일 수 있다.
 from copy import deepcopy
 
 import numpy as np
@@ -36,30 +38,37 @@ class MyEngine(Engine):
 
         self.device = next(model.parameters()).device
 
+    # train : feed-forward -> loss 계산 -> back-propagation -> gradient descent -> 현재 상태 출력
     @staticmethod
-    def train(engine, mini_batch):
+    def train(engine, mini_batch): # data_loader.py의 MnistDataset class의 return 대로 mini_batch는 튜플(x,y)로 되어있음
         # You have to reset the gradients of all model parameters
         # before to take another step in gradient descent.
         engine.model.train() # Because we assign model as class variable, we can easily access to it.
-        engine.optimizer.zero_grad()
+        engine.optimizer.zero_grad()  # 한 번의 iteration마다 engine이 호출되므로 zero_grad 선언
 
         x, y = mini_batch
         x, y = x.to(engine.device), y.to(engine.device)
 
         # Take feed-forward
+        # |x| = (bs, 784),   |y_hat| = (bs, 10) -> y_hat에는 각 차원(class)별 확률값이 들어있다 
         y_hat = engine.model(x)
 
-        loss = engine.crit(y_hat, y)
-        loss.backward()
+        loss = engine.crit(y_hat, y) # scalar 값 
+        loss.backward() # 모든 weights에 gradient 값이 채워짐
 
         # Calculate accuracy only if 'y' is LongTensor,
         # which means that 'y' is one-hot representation.
+        # y가 long tensor이면 classification, y가 float tensor면 regression task
         if isinstance(y, torch.LongTensor) or isinstance(y, torch.cuda.LongTensor):
-            accuracy = (torch.argmax(y_hat, dim=-1) == y).sum() / float(y.size(0))
+            accuracy = (torch.argmax(y_hat, dim=-1) == y).sum() / float(y.size(0))  # 현재 mini-batch에서의 accuracy
         else:
             accuracy = 0
 
+        # parameter의 L2 Norm : 학습이 진행될수록 모델의 복잡도가 높아지면서 p_norm은 점점 커져야한다 = model parameter가 update되고 있다.
         p_norm = float(get_parameter_norm(engine.model.parameters()))
+        # gradient의 L2 Norm : gradient의 크기로 현재 loss surface가 얼마나 가파른지 판단할 수 있다.(학습의 안정성을 판단할 수 있는 지표)
+        # 학습을 처음 시작하면 배울게 많아(오답이 많아) 기울기가 가파르다. 학습이 진행됨에 따라 g_norm이 줄어들면서 일정 숫자로 수렴해야 한다
+        # SGD로 항상 모집단과 다르기 때문에 0으로 수렴하지는 않지만, 일정 숫자로 수렴하지 않고 g_norm 수치가 날뛰면 loss가 NaN이 되면서 학습이 제대로 안될 것
         g_norm = float(get_grad_norm(engine.model.parameters()))
 
         # Take a step of gradient descent.
@@ -72,6 +81,8 @@ class MyEngine(Engine):
             '|g_param|': g_norm,
         }
 
+
+    # validate : feed-forward -> loss 계산 -> 현재 상태 출력
     @staticmethod
     def validate(engine, mini_batch):
         engine.model.eval()
@@ -94,14 +105,17 @@ class MyEngine(Engine):
             'accuracy': float(accuracy),
         }
 
+    # attach : train과 validation의 현재 상황 출력(loss가 떨어지고 있는지 등을 확인하기 위함)
     @staticmethod
     def attach(train_engine, validation_engine, verbose=VERBOSE_BATCH_WISE):
         # Attaching would be repaeted for serveral metrics.
         # Thus, we can reduce the repeated codes by using this function.
-        def attach_running_average(engine, metric_name):
+        def attach_running_average(engine, metric_name): # loss의 running average를 자동으로 계산 및 저장
+            # 위 train function의 return 값(dict 형태)에서 필요한 metric_name을 받아오면 RunningAverage 객체가 만들어지는데
+            # 그걸 engine에 metric_name(str)으로 붙인다
             RunningAverage(output_transform=lambda x: x[metric_name]).attach(
                 engine,
-                metric_name,
+                metric_name, # 따라서, 꼭 이름이 metric_name일 필요는 없다
             )
 
         training_metric_names = ['loss', 'accuracy', '|param|', '|g_param|']
@@ -117,7 +131,7 @@ class MyEngine(Engine):
 
         # If the verbosity is set, statistics would be shown after each epoch.
         if verbose >= VERBOSE_EPOCH_WISE:
-            @train_engine.on(Events.EPOCH_COMPLETED)
+            @train_engine.on(Events.EPOCH_COMPLETED) # event handler 등록 : epoch이 끝났을 때 원하는 metric을 출력
             def print_train_logs(engine):
                 print('Epoch {} - |param|={:.2e} |g_param|={:.2e} loss={:.4e} accuracy={:.4f}'.format(
                     engine.state.epoch,
@@ -189,10 +203,12 @@ class Trainer():
             verbose=self.config.verbose
         )
 
+        # training이 1 epoch 끝나면, validation의 1 epoch이 시작된다
+        # 따라서 training을 run 시키면, validation이 언제 호출될지 알려줘야 한다
         def run_validation(engine, validation_engine, valid_loader):
             validation_engine.run(valid_loader, max_epochs=1)
 
-        train_engine.add_event_handler(
+        train_engine.add_event_handler( # train_engine의 1 epoch이 끝났을 때 run_validation이 시작된다
             Events.EPOCH_COMPLETED, # event
             run_validation, # function
             validation_engine, valid_loader, # arguments
@@ -207,6 +223,8 @@ class Trainer():
             train_engine, self.config, # arguments
         )
 
+        # 앞까지는 붙이는 작업
+        # 이제부터 train_engine을 실제 실행(n_epoch run)
         train_engine.run(
             train_loader,
             max_epochs=self.config.n_epochs,
