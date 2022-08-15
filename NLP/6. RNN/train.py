@@ -36,7 +36,9 @@ def define_argparser():
     p.add_argument('--n_layers', type=int, default=4)
     p.add_argument('--dropout_p', type=float, default=.2)
 
-    p.add_argument('--max_grad', type=float, default=-1)
+    # gradient clipping을 위한 threshold 설정 : gradient descent의 방향은 유지한 채 이동거리만 줄이는 것
+    # rnn 이외의 architecture를 사용하더라도, gradient가 불안정해 loss가 튀는 현상이 발생하면 gradient clipping 고려하기
+    p.add_argument('--max_grad', type=float, default=-1) # default를 -1로 두어, max_grad가 0보다 큰 경우에만 gradient clipping 적용
 
     config = p.parse_args()
 

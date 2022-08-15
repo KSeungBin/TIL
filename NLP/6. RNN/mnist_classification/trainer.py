@@ -63,14 +63,14 @@ class MyEngine(Engine):
         g_norm = float(get_grad_norm(engine.model.parameters()))
 
         if engine.config.max_grad > 0:
-            torch_utils.clip_grad_norm_(
+            torch_utils.clip_grad_norm_( # underscore가 붙었다는 건 inplace한다는 뜻
                 engine.model.parameters(),
-                engine.config.max_grad,
-                norm_type=2,
+                engine.config.max_grad, # gradient의 L2 Norm이 threshold보다 큰 경우 clipping 
+                norm_type=2,  # default가 L2 Norm
             )
 
         # Take a step of gradient descent.
-        engine.optimizer.step()
+        engine.optimizer.step() # backward로 gradient를 구하고 나서 step하기 전에 clipping해야 한다
 
         return {
             'loss': float(loss),
