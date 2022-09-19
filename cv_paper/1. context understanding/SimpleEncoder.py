@@ -42,7 +42,7 @@ class EncoderLayer(torch.nn.Module):
        self.num_head = num_head
        self.hidden_dim = hidden_dim # embedding dimension
        # hidden_dim을 num_head로 나누었을 때 나누어 떨어지지 않으면 오류를 발생시키는 assert문을 넣어주기도 함
-       assert self.att_dim * num_head == self.hidden_dim, "hidden_dim must be divisible by num_head"
+       # assert self.att_dim * num_head == self.hidden_dim, "hidden_dim must be divisible by num_head"
 
        self.MHA = MultiHeadAttention()
        
@@ -109,20 +109,20 @@ class EncoderLayer(torch.nn.Module):
         return Z
 
 
-if __name__ == "main":
-    device = torch.device('cpu')
-    num_batch = 16
-    num_head = 2
-    hidden_dim = 64
-    num_token_length = 8
 
-    X = torch.Tensor(torch.randn(num_batch, num_token_length, hidden_dim))
-    print('X.shape: ', X.shape)
+device = torch.device('cpu')
+num_batch = 16
+num_head = 2
+hidden_dim = 64
+num_token_length = 8
 
-    self_attention_encoder = EncoderLayer(hidden_dim=hidden_dim, num_head=num_head)
+X = torch.Tensor(torch.randn(num_batch, num_token_length, hidden_dim))
+print('X.shape: ', X.shape)
 
-    Z = self_attention_encoder(input_Q=X, input_K=X, input_V=X)
-    print('Z.shape: ', Z.shape)
+self_attention_encoder = EncoderLayer(hidden_dim=hidden_dim, num_head=num_head)
+
+Z = self_attention_encoder(input_Q=X, input_K=X, input_V=X)
+print('Z.shape: ', Z.shape)
 
 
 
