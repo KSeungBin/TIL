@@ -7,14 +7,14 @@ class DataLoader(object):
     '''
 
     def __init__(
-        self, train_fn,
+        self, train_fn, # train_filename
         batch_size=64,
         valid_ratio=.2,
         device=-1,
         max_vocab=999999,
         min_freq=1,
-        use_eos=False,
-        shuffle=True
+        use_eos=False, 
+        shuffle=True   # train : shuffle = True / valid & test : shuffle = False
     ):
         '''
         DataLoader initialization.
@@ -31,14 +31,14 @@ class DataLoader(object):
         # Define field of the input file.
         # The input file consists of two fields.
         self.label = data.Field(
-            sequential=False,
-            use_vocab=True,
+            sequential=False,  
+            use_vocab=True,  # class(positive/negative)를 하나의 단어로 취급
             unk_token=None
         )
         self.text = data.Field(
             use_vocab=True,
-            batch_first=True,
-            include_lengths=False,
+            batch_first=True, # batch dimension을 맨 앞에 위치시키는 것 추천
+            include_lengths=False, # NLG에서는 include_lengths, eos_token -> True
             eos_token='<EOS>' if use_eos else None
         )
 
@@ -58,16 +58,16 @@ class DataLoader(object):
         # Those loaded dataset would be feeded into each iterator:
         # train iterator and valid iterator.
         # We sort input sentences by length, to group similar lengths.
-        self.train_loader, self.valid_loader = data.BucketIterator.splits(
+        self.train_loader, self.valid_loader = data.BucketIterator.splits(  # dataset 구축되면 DataLoader에 넣는다
             (train, valid),
             batch_size=batch_size,
             device='cuda:%d' % device if device >= 0 else 'cpu',
             shuffle=shuffle,
-            sort_key=lambda x: len(x.text),
-            sort_within_batch=True,
+            sort_key=lambda x: len(x.text),                     
+            sort_within_batch=True,     # mini-batch 내부에서도 text의 길이를 기준으로 정렬된다.
         )
 
         # At last, we make a vocabulary for label and text field.
         # It is making mapping table between words and indice.
-        self.label.build_vocab(train)
+        self.label.build_vocab(train)  # positive/negative
         self.text.build_vocab(train, max_size=max_vocab, min_freq=min_freq)
