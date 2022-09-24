@@ -13,7 +13,7 @@ class DataLoader(object):
         device=-1,
         max_vocab=999999,
         min_freq=1,
-        use_eos=False, 
+        use_eos=False, # <end of sentence> token 사용하지 않는다
         shuffle=True   # train : shuffle = True / valid & test : shuffle = False
     ):
         '''
@@ -31,13 +31,13 @@ class DataLoader(object):
         # Define field of the input file.
         # The input file consists of two fields.
         self.label = data.Field(
-            sequential=False,  
-            use_vocab=True,  # class(positive/negative)를 하나의 단어로 취급
+            sequential=False,  # class만 있기 떄문에 sequential data 아니다
+            use_vocab=True,    # class(positive/negative)를 하나의 단어로 취급
             unk_token=None
         )
         self.text = data.Field(
             use_vocab=True,
-            batch_first=True, # batch dimension을 맨 앞에 위치시키는 것 추천
+            batch_first=True,      # batch dimension을 맨 앞에 위치시키는 것 추천
             include_lengths=False, # NLG에서는 include_lengths, eos_token -> True
             eos_token='<EOS>' if use_eos else None
         )
@@ -63,11 +63,11 @@ class DataLoader(object):
             batch_size=batch_size,
             device='cuda:%d' % device if device >= 0 else 'cpu',
             shuffle=shuffle,
-            sort_key=lambda x: len(x.text),                     
-            sort_within_batch=True,     # mini-batch 내부에서도 text의 길이를 기준으로 정렬된다.
+            sort_key=lambda x: len(x.text), # 비슷한 길이의 문장끼리 mini-batch로 구성하기 위해 text의 길이를 기준으로 정렬                    
+            sort_within_batch=True,         # NLG에서는 반드시 True : mini-batch 내부에서도 text의 길이를 기준으로 정렬된다.
         )
 
         # At last, we make a vocabulary for label and text field.
         # It is making mapping table between words and indice.
-        self.label.build_vocab(train)  # positive/negative
+        self.label.build_vocab(train)  # vocab 2개 : positive/negative
         self.text.build_vocab(train, max_size=max_vocab, min_freq=min_freq)
