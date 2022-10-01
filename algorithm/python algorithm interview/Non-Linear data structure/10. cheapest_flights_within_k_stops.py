@@ -1,13 +1,20 @@
 import collections
 import heapq
 from typing import *
+import collections
+import heapq
+
+
 def findCheapestPrice(self, n: int, flights: List[List[int]], src: int, dst: int, K: int) -> int:
     graph = collections.defaultdict(list)
     for u, v, w in flights:
         graph[u].append((v, w))
     
+    # variable Q: [(price, vertex, number of remaining possible stops)]
     Q = [(0, src, K)]
 
+
+    # detect minimum cost to destination based on min-priority queue
     while Q:
         price, node, k = heapq.heappop(Q)
         if node == dst:
