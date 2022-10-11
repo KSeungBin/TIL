@@ -1,3 +1,6 @@
+# remove all leaf nodes from the undirected graph
+# Among all possible rooted trees, those with minimum height are called minimum height trees(MHTs).
+# Return a list of all MHTs' root labels. you can return the answer in any order
 from typing import *
 import collections
 
