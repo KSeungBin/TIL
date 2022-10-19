@@ -13,7 +13,7 @@ class Solution:
     result = sys.maxsize
     
     # comparison result of inorder traversal with recursion
-    def minDiffInBST(self, root: TreeNode) -> int:
+    def minDiffInBST1(self, root: TreeNode) -> int:
         if root.left:
             self.minDiffInBST(root.left)
         
@@ -24,3 +24,27 @@ class Solution:
             self.minDiffInBST(root.right)
         
         return self.result
+
+
+# method 2: iterative inorder traversal
+def minDiffInBST2(self, root: TreeNode) -> int:
+    prev = -sys.maxsize
+    result = sys.maxsize
+
+    stack = []
+    node = root
+
+    # comparison result of iterative inorder traversal
+    while stack or node:
+        while node:
+            stack.append(node)
+            node = node.left
+        
+        node = stack.pop()
+
+        result = min(result, node.val - prev)
+        prev = node.val
+
+        node = node.right
+    
+    return result
