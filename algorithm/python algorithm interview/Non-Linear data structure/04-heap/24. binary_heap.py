@@ -5,6 +5,8 @@ class BinaryHeap(object):
     def __len__(self):
         return len(self.items) - 1
     
+    # run a '_percolate_up' on every insert
+    # implementation of iterative structure
     def _percolate_up(self):
         i = len(self)
         parent = i // 2
@@ -19,6 +21,8 @@ class BinaryHeap(object):
         self.items.append(k)
         self._percolate_up()
     
+    # run a '_percolate_down' after extraction of root value
+    # implementing recursion
     def _percolate_down(self, idx):
         left = idx * 2
         right = idx * 2 + 1
