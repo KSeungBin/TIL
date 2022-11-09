@@ -31,3 +31,24 @@ def sortList(self, head: ListNode) -> ListNode:
 
     return self.mergeTwoLists(l1, l2)
 
+
+# method 2: practical way to use built-in functions in python
+from typing import *
+def sortList(self, head: ListNode) -> ListNode:
+    # linked list -> python list
+    p = head
+    lst: List = []
+    while p:
+        lst.append(p.val)
+        p= p.next
+    
+    # sort
+    lst.sort()
+
+    # python list -> linked list
+    p = head
+    for i in range(len(lst)):
+        p.val = lst[i]
+        p = p.next
+    return head
+    
