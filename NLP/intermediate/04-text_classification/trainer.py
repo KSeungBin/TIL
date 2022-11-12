@@ -34,7 +34,7 @@ class MyEngine(Engine):
         self.device = next(model.parameters()).device
 
     @staticmethod
-    def train(engine, mini_batch):
+    def train(engine, mini_batch): # train engine,  train_loader가 iterative하게 return하는 mini-batch tensor
         # You have to reset the gradients of all model parameters
         # before to take another step in gradient descent.
         engine.model.train() # Because we assign model as class variable, we can easily access to it.
@@ -43,27 +43,28 @@ class MyEngine(Engine):
         x, y = mini_batch.text, mini_batch.label
         x, y = x.to(engine.device), y.to(engine.device)
 
-        x = x[:, :engine.config.max_length]
+        x = x[:, :engine.config.max_length] # (BS, length) -> 크롤링한 데이터 중 감성분석에 사용하기에 길이가 괜히 긴 문장들은 256까지 잘라줌
 
         # Take feed-forward
-        y_hat = engine.model(x)
+        y_hat = engine.model(x) # |y_hat| = (BS, |C|)
 
-        loss = engine.crit(y_hat, y)
+        loss = engine.crit(y_hat, y) # NLL Loss 값이 스칼라 값으로 변환됨
         loss.backward()
 
         # Calculate accuracy only if 'y' is LongTensor,
         # which means that 'y' is one-hot representation.
         if isinstance(y, torch.LongTensor) or isinstance(y, torch.cuda.LongTensor):
-            accuracy = (torch.argmax(y_hat, dim=-1) == y).sum() / float(y.size(0))
+            accuracy = (torch.argmax(y_hat, dim=-1) == y).sum() / float(y.size(0))   # |C|의 argmax를 구하면 (bs,) / mini-batch size
         else:
             accuracy = 0
 
-        p_norm = float(get_parameter_norm(engine.model.parameters()))
-        g_norm = float(get_grad_norm(engine.model.parameters()))
+        p_norm = float(get_parameter_norm(engine.model.parameters())) # 모델 내의 parameters의 L2 Norm의 합: 학습이 진행되면서 L2 Norm은 커지므로 weight decay로 이를 방지
+        g_norm = float(get_grad_norm(engine.model.parameters())) # 모델의 weight parameters의 gradient의 L2 Norm의 합: fluctuation이 있으면 학습이 불안정한 것. 안정적으로 0이 아닌 숫자로 수렴하는 형태가 이상적
 
         # Take a step of gradient descent.
         engine.optimizer.step()
 
+        # progress bar -> 학습 현황 확인
         return {
             'loss': float(loss),
             'accuracy': float(accuracy),
@@ -167,16 +168,16 @@ class MyEngine(Engine):
 
 class Trainer():
 
-    def __init__(self, config):
+    def __init__(self, config): # arg_parser를 통해 만든 configuration
         self.config = config
 
     def train(
         self,
-        model, crit, optimizer,
+        model, crit, optimizer, # model, criterion(loss), optimizer(adam)
         train_loader, valid_loader,
     ):
         train_engine = MyEngine(
-            MyEngine.train,
+            MyEngine.train,     # 매 mini-batch(iteration)마다 train 실행
             model, crit, optimizer, self.config
         )
         validation_engine = MyEngine(
@@ -184,19 +185,21 @@ class Trainer():
             model, crit, optimizer, self.config
         )
 
+        # attach: 통계값 출력
         MyEngine.attach(
             train_engine,
             validation_engine,
             verbose=self.config.verbose
         )
 
+        # training 1 epoch이 끝나면, validation 1 epoch 돌려주는 루틴을 반복
         def run_validation(engine, validation_engine, valid_loader):
             validation_engine.run(valid_loader, max_epochs=1)
 
         train_engine.add_event_handler(
             Events.EPOCH_COMPLETED, # event
             run_validation, # function
-            validation_engine, valid_loader, # arguments
+            validation_engine, valid_loader, # arguments: run_validation 호출하면 이 인자를 들고 온다
         )
         validation_engine.add_event_handler(
             Events.EPOCH_COMPLETED, # event
