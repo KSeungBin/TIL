@@ -22,7 +22,7 @@ def define_argparser():
     p.add_argument('--model_fn', required=True)
     p.add_argument('--gpu_id', type=int, default=-1)
     p.add_argument('--batch_size', type=int, default=256)
-    p.add_argument('--top_k', type=int, default=1)
+    p.add_argument('--top_k', type=int, default=1) # top-k predictions
     p.add_argument('--max_length', type=int, default=256)
     
     p.add_argument('--drop_rnn', action='store_true')
@@ -43,7 +43,7 @@ def read_text(max_length=256):
         if line.strip() != '':
             lines += [line.strip().split(' ')[:max_length]]
 
-    return lines
+    return lines  # tokenized words: they don't need to be converted to one-hot vector
 
 
 def define_field():
@@ -69,7 +69,7 @@ def main(config):
     saved_data = torch.load(
         config.model_fn,
         map_location='cpu' if config.gpu_id < 0 else 'cuda:%d' % config.gpu_id
-    )
+    ) # wrapping된 pickle file(serialized objects)을 받아 온다
 
     train_config = saved_data['config']
     rnn_best = saved_data['rnn']
@@ -80,6 +80,7 @@ def main(config):
     vocab_size = len(vocab)
     n_classes = len(classes)
 
+    # override field: one-hot vector(index) <-> word, class index <-> class name
     text_field, label_field = define_field()
     text_field.vocab = vocab
     label_field.vocab = classes
@@ -124,28 +125,29 @@ def main(config):
 
             y_hat = []
             for idx in range(0, len(lines), config.batch_size):                
-                # Converts string to list of index.
+                # Converts string to list of index(long tensor).
                 x = text_field.numericalize(
                     text_field.pad(lines[idx:idx + config.batch_size]),
                     device='cuda:%d' % config.gpu_id if config.gpu_id >= 0 else 'cpu',
                 )
 
-                y_hat += [model(x).cpu()]
-            # Concatenate the mini-batch wise result
+                y_hat += [model(x).cpu()] # |y_hat| = (BS, |C|)
+            # Concatenate the mini-batch wise result(chunking)
             y_hat = torch.cat(y_hat, dim=0)
             # |y_hat| = (len(lines), n_classes)
 
-            y_hats += [y_hat]
+            y_hats += [y_hat] # (N, |C|) * 2
 
             model.cpu()
         # Merge to one tensor for ensemble result and make probability from log-prob.
         y_hats = torch.stack(y_hats).exp()
-        # |y_hats| = (len(ensemble), len(lines), n_classes)
-        y_hats = y_hats.sum(dim=0) / len(ensemble) # Get average
+        # |y_hats| = (len(ensemble), len(lines), n_classes) = (2, N, |C|)   *|C| = exp(log P) = P
+        y_hats = y_hats.sum(dim=0) / len(ensemble) # Get average: y_hats.mean(dim=0)
         # |y_hats| = (len(lines), n_classes)
 
-        probs, indice = y_hats.topk(config.top_k)
+        probs, indice = y_hats.topk(config.top_k) # probs: float tensor / indice: long tensor(argument index)
 
+        # print class name
         for i in range(len(lines)):
             sys.stdout.write('%s\t%s\n' % (
                 ' '.join([classes.itos[indice[i][j]] for j in range(config.top_k)]), 
