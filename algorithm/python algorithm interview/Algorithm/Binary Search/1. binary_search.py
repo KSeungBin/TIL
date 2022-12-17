@@ -30,3 +30,22 @@ def search2(self, nums: List[int], target: int) -> int:
         else:
             return mid
     return -1
+
+
+# method 3: binary search module
+import bisect
+def search3(self, nums: List[int], target: int) -> int:
+    index = bisect.bisect_left(nums, target)
+
+    if index < len(nums) and nums[index] == target:
+        return index
+    else:
+        return -1
+
+
+# method 4: Applying index not using the technique of binary search
+def search4(self, nums: List[int], target: int) -> int:
+    try:
+        return nums.index(target)
+    except ValueError:
+        return -1
