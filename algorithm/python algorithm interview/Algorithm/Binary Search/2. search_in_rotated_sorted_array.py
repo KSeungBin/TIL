@@ -1,8 +1,10 @@
 from typing import *
 def search(self, nums: List[int], target: int) -> int:
+    # exception processing
     if not nums:
         return -1
     
+    # set pivot to find the minimum value
     left, right = 0, len(nums) - 1
     while left < right:
         mid = left + (right - left) // 2
@@ -14,6 +16,7 @@ def search(self, nums: List[int], target: int) -> int:
     
     pivot = left
 
+    # find pivot with binary search
     left, right = 0, len(nums) - 1
     while left <= right:
         mid = left + (right - left) // 2
