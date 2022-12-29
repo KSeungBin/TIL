@@ -1,5 +1,5 @@
 from typing import *
-
+import bisect
 
 # method 1: two-pointer
 def twoSum1(self, numbers: List[int], target: int) -> List[int]:
@@ -27,3 +27,12 @@ def twoSum2(self, numbers: List[int], target: int) -> List[int]:
                 right = mid - 1
             else:
                 return k + 1, mid + 1
+
+
+# method 3: bisect module + slicing
+def twoSum3(self, numbers: List[int], target: int) -> List[int]:
+    for k, v in enumerate(numbers):
+        expected = target - v
+        i = bisect.bisect_left(numbers[k + 1:], expected)
+        if i < len(numbers[k + 1:]) and numbers[i + k + 1] == expected:
+            return k + 1, i + k + 2
