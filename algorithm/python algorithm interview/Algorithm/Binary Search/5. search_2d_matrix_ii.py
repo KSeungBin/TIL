@@ -1,5 +1,5 @@
 # method 1: search at the end of first row
-def searchMatrix(self, matrix, target):
+def searchMatrix1(self, matrix, target):
     # exception processing
     if not matrix:
         return False
@@ -18,3 +18,8 @@ def searchMatrix(self, matrix, target):
         elif target > matrix[row][col]:
             row += 1
     return False
+
+
+# method 2: pythonic way
+def searchMatrix2(self, matrix, target):
+    return any(target in row for row in matrix)
