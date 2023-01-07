@@ -1,5 +1,5 @@
 # method 1: implementation of full adder
-def getSum(self, a: int, b: int) -> int:
+def getSum1(self, a: int, b: int) -> int:
     MASK = 0xFFFFFFFF
     INT_MAX = 0x7FFFFFFF
 
@@ -31,3 +31,19 @@ def getSum(self, a: int, b: int) -> int:
         result = ~(result ^ MASK)
     
     return result
+
+
+# method 2: simple implementation
+def getSum2(self, a: int, b: int) -> int:
+    MASK = 0xFFFFFFFF
+    INT_MAX = 0x7FFFFFFF
+    # process sum, digit
+    while b != 0:
+        a, b = (a ^ b) & MASK, ((a & b) << 1) & MASK
+    
+    # process negative numbers
+    if a > INT_MAX:
+        a = ~(a ^ MASK)
+    return a
+
+
