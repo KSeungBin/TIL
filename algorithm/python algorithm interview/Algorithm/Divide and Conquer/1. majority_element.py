@@ -17,3 +17,17 @@ def majorityElement2(self, nums: List[int]) -> int:
         
         if counts[num] > len(nums) // 2:
             return num
+
+
+# method 3: divide and conquer
+def majorityElement3(self, nums: List[int]) -> int:
+    if not nums:
+        return None
+    if len(nums) == 1:
+        return nums[0]
+    
+    half = len(nums) // 2
+    a = self.majorityElement3(nums[:half])
+    b = self.majorityElement3(nums[half:])
+
+    return [b,a][nums.count(a) > half]
